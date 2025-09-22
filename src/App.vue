@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <h1>Графический редактор</h1>
+  <div>
+    <h3>Графический редактор</h3>
     <CanvasEditor />
   </div>
 </template>
@@ -16,6 +16,6 @@ import CanvasEditor from './components/CanvasEditor.vue';
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 0;
 }
 </style>

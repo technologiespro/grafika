@@ -3,6 +3,7 @@
     <div class="controls">
       <button @click="zoomIn">+</button>
       <button @click="zoomOut">-</button>
+      <button @click="cut">Вырезать</button>
       <button @click="startCrop" :disabled="isCropping">Обрезать</button>
       <button @click="confirmCrop" v-if="isCropping">Подтвердить обрезку</button>
       <button @click="saveImage('png')">Сохранить в PNG</button>
@@ -65,6 +66,36 @@ const handlePaste = (e: ClipboardEvent) => {
         }
       }
     }
+  }
+};
+
+const cut = async () => {
+  const activeObject = canvas.getActiveObject();
+  if (!activeObject) {
+    return; // Ничего не выбрано
+  }
+
+  // Конвертируем объект в Data URL
+  const dataURL = activeObject.toDataURL({});
+
+  // Конвертируем Data URL в Blob
+  const response = await fetch(dataURL);
+  const blob = await response.blob();
+
+  try {
+    // Используем Clipboard API для записи в буфер обмена
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        [blob.type]: blob,
+      }),
+    ]);
+
+    // Удаляем объект с холста
+    canvas.remove(activeObject);
+    canvas.discardActiveObject();
+    canvas.renderAll();
+  } catch (err) {
+    console.error('Не удалось скопировать в буфер обмена: ', err);
   }
 };
 
