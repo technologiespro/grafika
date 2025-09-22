@@ -22,7 +22,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-*.lcov
+*.lcovls
 
 # nyc test coverage
 .nyc_output
@@ -95,7 +95,7 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
-.cache
+
 
 # Sveltekit cache directory
 .svelte-kit/
