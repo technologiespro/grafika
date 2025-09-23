@@ -1,6 +1,10 @@
 <template>
   <div>
     <div class="controls">
+      <div class="dimensions">
+        <span>Ширина: {{ canvasWidth }}px</span>
+        <span>Высота: {{ canvasHeight }}px</span>
+      </div>
       <button @click="zoomIn">+</button>
       <button @click="zoomOut">-</button>
       <button @click="cut">Вырезать</button>
@@ -22,6 +26,8 @@ let canvas: fabric.Canvas;
 const isCropping = ref(false);
 let cropRect: fabric.Rect | null = null;
 let startX: number, startY: number;
+const canvasWidth = ref(0);
+const canvasHeight = ref(0);
 
 
 const zoomIn = () => {
@@ -56,7 +62,29 @@ const handlePaste = (e: ClipboardEvent) => {
           reader.onload = (event) => {
             const imgElement = new Image();
             imgElement.onload = () => {
-              const fabricImage = new fabric.Image(imgElement);
+              // Логика изменения размера холста
+              const fixedWidth = 1280; // Фиксированная ширина
+              const imgWidth = imgElement.width;
+              const imgHeight = imgElement.height;
+              const aspectRatio = imgWidth / imgHeight;
+
+              const newWidth = fixedWidth;
+              const newHeight = newWidth / aspectRatio;
+
+              canvas.setWidth(newWidth);
+              canvas.setHeight(newHeight);
+              canvasWidth.value = newWidth;
+              canvasHeight.value = Math.round(newHeight);
+
+              // Вставляем изображение и масштабируем его по размеру холста
+              const fabricImage = new fabric.Image(imgElement, {
+                left: 0,
+                top: 0,
+                scaleX: newWidth / imgWidth,
+                scaleY: newHeight / imgHeight,
+              });
+
+              canvas.clear(); // Очищаем холст перед вставкой нового изображения
               canvas.add(fabricImage);
               canvas.renderAll();
             };
@@ -186,11 +214,16 @@ const saveImage = (format: 'png' | 'jpeg') => {
 
 onMounted(() => {
   if (canvasEl.value) {
+    const initialWidth = 1280;
+    const initialHeight = 720;
     canvas = new fabric.Canvas(canvasEl.value, {
-      width: 800,
-      height: 600,
+      width: initialWidth,
+      height: initialHeight,
       backgroundColor: '#f0f0f0'
     });
+    canvasWidth.value = initialWidth;
+    canvasHeight.value = initialHeight;
+
     window.addEventListener('paste', handlePaste);
     canvas.on('mouse:wheel', handleMouseWheel);
   }
@@ -207,6 +240,19 @@ onUnmounted(() => {
 <style scoped>
 .controls {
   margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.dimensions {
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+.dimensions span {
+  margin-right: 15px;
 }
 canvas {
   border: 1px solid #ccc;
